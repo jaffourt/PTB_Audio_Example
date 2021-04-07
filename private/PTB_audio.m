@@ -1,9 +1,12 @@
 function stimuli = PTB_audio(run, HOME)
 
+    PsychPortAudio('Close');
+    PsychPortAudio('DeleteBuffer', [], 1); %delete all buffers
+    InitializePsychSound;
+
     stimuli = struct()
     STIMULI_AUDIO = fullfile(HOME, 'stimuli');
     stimuli = addStructure(STIMULI_AUDIO, stimuli, run)
-    stimuli._audio_iter = 1;
 
     sampleRate = 44100;
     numChannels = 2;

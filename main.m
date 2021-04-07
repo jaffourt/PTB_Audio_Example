@@ -74,37 +74,48 @@ outputTable.Run = cell(stimuliStruct.NUM_TRIALS,1);
 outputTable.Run(:,1) = run;
 outputTable.TrialOnset = zeros(stimuliStruct.NUM_TRIALS,1);
 outputTable.AudioStart = zeros(stimuliStruct.NUM_TRIALS,1);
-outputTable.Condition = cell(stimuliStruct.NUM_TRIALS,1);
+outputTable.Condition = stimuliStruct.Trial;
 outputTable.File = cell(stimuliStruct.NUM_TRIALS,1);
 
 %% Experiment %%
 startTime = GetSecs();
-
+stimIter = 1;
 for j = 1 : stimuliStruct.NUM_TRIALS
 
     outputTable.TrialOnset(j) = GetSecs() - startTime; % Save the onset time of the trial
 
-    % grey screen
-    Screen(windowPtr, 'Flip');
+    if strcmp(stimuliStruct.Trial{i},'FIXATION')
+        waitWithFixation(12, windowPtr);
+        outputTable.AudioStart(j) = 'NaN';
+        outputTable.File(j) = 'NaN';
+    else
 
-    % PLAY AUDIO
-    PsychPortAudio('Start', stimuliStruct.pahandle, 1, 0, 1);
-    outputTable.AudioStart(j) = PsychPortAudio('GetStatus', stimuliStruct.pahandle).StartTime - startTime;
+        % grey screen
+        Screen(windowPtr, 'Flip');
 
-    % while the audio plays, now is a good time to save whatever output we have
-    writetable(outputTable, outputPath)
+        % PLAY AUDIO
+        PsychPortAudio('FillBuffer', pahandle, stimuliStruct.buffers(stimIter));
+        PsychPortAudio('Start', stimuliStruct.pahandle, 1, 0, 1);
 
-    % wait for audio to finish
-    while 1
-        if PsychPortAudio('GetStatus', pahandle).Active == 0
-            break;
-        else
-            WaitSecs(0.005);
+
+        % while the audio plays, now is a good time to save whatever output we have
+        % and do a few quick computations
+        outputTable.AudioStart(j) = PsychPortAudio('GetStatus', stimuliStruct.pahandle).StartTime - startTime;
+        outputTable.File(j) = stimuli.AudioFile(stimIter);
+        stimIter = stimIter + 1;
+        writetable(outputTable, outputPath)
+
+        % wait for audio to finish
+        while 1
+            if PsychPortAudio('GetStatus', pahandle).Active == 0
+                break;
+            else
+                WaitSecs(0.005);
+            end
         end
-    end
 
-    % 4 second fixation, regardless of audio duration (?)
-    waitWithFixation(4, windowPtr);
+        % 4 second fixation, regardless of audio duration (?)
+        waitWithFixation(4, windowPtr);
 end
 
 PsychPortAudio('Close');
