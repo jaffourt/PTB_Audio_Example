@@ -85,7 +85,7 @@ for j = 1 : stimuliStruct.NUM_TRIALS
     outputTable.TrialOnset(j) = GetSecs() - startTime; % Save the onset time of the trial
 
     if strcmp(stimuliStruct.Trial{i},'FIXATION')
-        waitWithFixation(12, windowPtr);
+        waitWithFixation(stimuliStruct.fixationDuration, windowPtr);
         outputTable.AudioStart(j) = 'NaN';
         outputTable.File(j) = 'NaN';
     else
