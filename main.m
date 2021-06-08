@@ -51,21 +51,21 @@ WaitSecs(0.5); %some buffer time for key press to work
 trigger_key = [KbName('=+'), KbName('+'), KbName('=')];
 trigger_response_keys = [KbName('1!'), KbName('2@')];
 escapeKey = KbName('ESCAPE');
-HideCursor;
-while 1
-    [keyIsDown, sec, keyCode] = KbCheck(-3); % KbCheck(-3) is for production use
-    if keyCode(escapeKey)
-        Screen('CloseAll');
-        fprintf('Experiment quit by pressing ESCAPE\n');
-        return;
-    elseif ismember(find(keyCode,1), trigger_key)
-        break;
-    end
-    WaitSecs(0.001);
-end
+% HideCursor;
+% while 1
+%     [keyIsDown, sec, keyCode] = KbCheck(-3); % KbCheck(-3) is for production use
+%     if keyCode(escapeKey)
+%         Screen('CloseAll');
+%         fprintf('Experiment quit by pressing ESCAPE\n');
+%         return;
+%     elseif ismember(find(keyCode,1), trigger_key)
+%         break;
+%     end
+%     WaitSecs(0.001);
+% end
 
 %% Initialize output table %%
-outputPath = fullfile(HOME, 'output', sprintf('ANNsent_%s_session%d_block%d_list%d_.csv', subjID, session, block, list));
+outputPath = fullfile(HOME, 'output', sprintf('ANNsent_%s_session%d_block%d_list%d.csv', subjID, session, block, list));
 outputTable=table();
 outputTable.Subject = cell(stimuliStruct.NUM_TRIALS,1);
 outputTable.Subject(:,1) = {subjID};
@@ -114,6 +114,9 @@ for j = 1 : stimuliStruct.NUM_TRIALS
         waitWithFixation(4, windowPtr);
     end
 end
+
+% one final write to output
+writetable(outputTable, outputPath)
 
 PsychPortAudio('Close');
 ShowCursor;
