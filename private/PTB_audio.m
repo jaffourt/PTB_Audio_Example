@@ -1,29 +1,27 @@
-function stimuli = PTB_audio(run, HOME)
+function stimuli = PTB_audio(HOME, list)
 
     PsychPortAudio('Close');
     PsychPortAudio('DeleteBuffer', [], 1); %delete all buffers
     InitializePsychSound;
 
-    stimuli = struct()
-    STIMULI_AUDIO = fullfile(HOME, 'stimuli');
-    stimuli = addStructure(STIMULI_AUDIO, stimuli, run)
+    stimuli = struct();
+    stimuli = addStructure(HOME, stimuli, list);
 
     sampleRate = 44100;
     numChannels = 2;
     stimuli.pahandle = PsychPortAudio('Open', [], [], 0, sampleRate, numChannels);
 
     for i = 1 : stimuli.NUM_STIMULI
-        file = stimuli.AudioFile(i);
+        file = stimuli.AudioFile{i};
         [y, sample] = audioread(file);
-        wavedata = y';
-        channels = size(wavedata, 1); % Number of rows == number of channels
-        if (sampleRate ~= sample || numChannels ~= channels)
-            warning('Assumed a sample rate or a number of channels which was incorrect.')
-            fprintf('File: %s, Channels: %d, Sample Rate: %d', file, channels, sample)
+        channels = size(y, 2); % Number of rows == number of channels
+        if sampleRate ~= sample
+            y = resample(y, sampleRate, sample);
         end
-        audioDur = length(y)/freq;
-        stimuli.buffers(i) = PsychPortAudio('CreateBuffer', [], wavedata);
+        
+        if numChannels ~= channels
+            y = repmat(y, 1, numChannels);
+        end
+        stimuli.buffers(i) = PsychPortAudio('CreateBuffer', [], y');
     end
-
-    return stimuli
 end
